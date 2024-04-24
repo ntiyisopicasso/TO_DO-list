@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;800;900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+:root {
+    --color-primary: #5a78ff;
+    --color-secondary: #0957ff;
+}
+
+body {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #5a78ff, #0957ff);
+}
+
+.author-text {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    text-align: center;
+    color: white;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
+}
+
+.container header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.alert-message {
+    display: none;
+}
+
+.input-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.input-section input {
+    margin-bottom: 10px;
+}
+
+.todos-filter,
+.todos-list {
+    margin-bottom: 10px;
+}
+
+.todos-list {
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.todo-item {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.todo-actions {
+    justify-content: flex-end;
+}
+
+.theme-switcher {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.table th,
+.table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    text-align: left;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.table tbody tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* Responsive styles */
+
+@media (max-width: 768px) {
+    .table th, .table td {
+        padding: 6px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .table th, .table td {
+        padding: 4px;
+        font-size: 10px;
+    }
+}
