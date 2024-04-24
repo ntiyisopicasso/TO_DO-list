@@ -1,3 +1,4 @@
+// Abstract class for TodoItemFormatter
 class TodoItemFormatter {
   formatTask(task) {
     return task.length > 14 ? task.slice(0, 14) + "..." : task;
@@ -7,15 +8,12 @@ class TodoItemFormatter {
     return dueDate || "No due date";
   }
 
-  formatTime(time) {
-    return time || "No time set";
-  }
-
   formatStatus(completed) {
     return completed ? "Completed" : "Pending";
   }
 }
 
+// Class responsible for managing Todo items
 class TodoManager {
   constructor(todoItemFormatter) {
     this.todos = JSON.parse(localStorage.getItem("todos")) || [];
@@ -36,57 +34,60 @@ class TodoManager {
   }
 
   editTodo(id, updatedTask) {
-    const todo = this.todos.find((t) => t.id === id);
-    if (todo) {
-      todo.task = updatedTask;
+      const todo = this.todos.find((t) => t.id === id);
+      if (todo) {
+        todo.task = updatedTask;
+        this.saveToLocalStorage();
+      }
+      return todo;
+    }
+  
+    deleteTodo(id) {
+      this.todos = this.todos.filter((todo) => todo.id !== id);
       this.saveToLocalStorage();
     }
-    return todo;
-  }
-
-  deleteTodo(id) {
-    this.todos = this.todos.filter((todo) => todo.id !== id);
-    this.saveToLocalStorage();
-  }
-
-  toggleTodoStatus(id) {
-    const todo = this.todos.find((t) => t.id === id);
-    if (todo) {
-      todo.completed = !todo.completed;
-      this.saveToLocalStorage();
+  
+    toggleTodoStatus(id) {
+      const todo = this.todos.find((t) => t.id === id);
+      if (todo) {
+        todo.completed = !todo.completed;
+        this.saveToLocalStorage();
+      }
     }
-  }
-
-  clearAllTodos() {
-    this.todos = [];
-    this.saveToLocalStorage();
-  }
-
-  filterTodos(status) {
-    switch (status) {
-      case "all":
-        return this.todos;
-      case "pending":
-        return this.todos.filter((todo) => !todo.completed);
-      case "completed":
-        return this.todos.filter((todo) => todo.completed);
-      default:
-        return [];
+  
+    clearAllTodos() {
+      if (this.todos.length > 0) {
+        this.todos = [];
+        this.saveToLocalStorage();
+      }
     }
-  }
-
-  getRandomId() {
-    return (
-      Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15)
-    );
-  }
-
-  saveToLocalStorage() {
-    localStorage.setItem("todos", JSON.stringify(this.todos));
-  }
+  
+    filterTodos(status) {
+      switch (status) {
+        case "all":
+          return this.todos;
+        case "pending":
+          return this.todos.filter((todo) => !todo.completed);
+        case "completed":
+          return this.todos.filter((todo) => todo.completed);
+        default:
+          return [];
+      }
+    }
+  
+    getRandomId() {
+      return (
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15)
+      );
+    }
+  
+    saveToLocalStorage() {
+      localStorage.setItem("todos", JSON.stringify(this.todos));
+    }
 }
 
+// Class responsible for managing the UI and handling events
 class UIManager {
   constructor(todoManager, todoItemFormatter) {
     this.todoManager = todoManager;
@@ -98,34 +99,48 @@ class UIManager {
     this.alertMessage = document.querySelector(".alert-message");
     this.deleteAllBtn = document.querySelector(".delete-all-btn");
 
-    this.addEventListeners();
-    this.showAllTodos();
+  this.addEventListeners();
+  this.showAllTodos();
   }
 
   addEventListeners() {
-    this.addBtn.addEventListener("click", () => this.handleAddTodo());
-    this.taskInput.addEventListener("keyup", (e) => {
-      if (e.keyCode === 13 && this.taskInput.value.length > 0) {
-        this.handleAddTodo();
-      }
-    });
-    this.deleteAllBtn.addEventListener("click", () => this.handleClearAllTodos());
+      // Event listener for adding a new todo
+      this.addBtn.addEventListener("click", () => {
+          this.handleAddTodo();
+      });
 
-    const filterButtons = document.querySelectorAll(".todos-filter li");
-    filterButtons.forEach((button) => {
-      button.addEventListener("click", () => this.handleFilterTodos(button.textContent.toLowerCase()));
-    });
+      // Event listener for pressing Enter key in the task input
+      this.taskInput.addEventListener("keyup", (e) => {
+          if (e.keyCode === 13 && this.taskInput.value.length > 0) {
+              this.handleAddTodo();
+          }
+      });
+
+      // Event listener for deleting all todos
+      this.deleteAllBtn.addEventListener("click", () => {
+          this.handleClearAllTodos();
+      });
+
+      // Event listeners for filter buttons
+      const filterButtons = document.querySelectorAll(".todos-filter li");
+      filterButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+              const status = button.textContent.toLowerCase();
+              this.handleFilterTodos(status);
+          });
+      });
   }
 
   handleAddTodo() {
-    const task = this.taskInput.value.trim();
+    const task = this.taskInput.value;
     const dueDate = this.dateInput.value;
     if (task === "") {
       this.showAlertMessage("Please enter a task", "error");
     } else {
       const newTodo = this.todoManager.addTodo(task, dueDate);
       this.showAllTodos();
-      this.clearInputs();
+      this.taskInput.value = "";
+      this.dateInput.value = "";
       this.showAlertMessage("Task added successfully", "success");
     }
   }
@@ -142,95 +157,145 @@ class UIManager {
   }
 
   displayTodos(todos) {
-    this.todosListBody.innerHTML = "";
-    if (todos.length === 0) {
-      this.todosListBody.innerHTML = `<tr><td colspan="5" class="text-center">No task found</td></tr>`;
-      return;
+
+      this.todosListBody.innerHTML = "";
+      
+      if (todos.length === 0) {
+          this.todosListBody.innerHTML = `<tr><td colspan="5" class="text-center">No task found</td></tr>`;
+          return;
+        }
+        
+      todos.forEach((todo) => {
+        this.todosListBody.innerHTML += `
+          <tr class="todo-item" data-id="${todo.id}">
+            <td>${this.todoItemFormatter.formatTask(todo.task)}</td>
+            <td>${this.todoItemFormatter.formatDueDate(todo.dueDate)}</td>
+            <td>${this.todoItemFormatter.formatStatus(todo.completed)}</td>
+            <td>
+              <button class="btn btn-warning btn-sm" onclick="uiManager.handleEditTodo('${
+                todo.id
+              }')">
+                <i class="bx bx-edit-alt bx-bx-xs"></i>    
+              </button>
+              <button class="btn btn-success btn-sm" onclick="uiManager.handleToggleStatus('${
+                todo.id
+              }')">
+                <i class="bx bx-check bx-xs"></i>
+              </button>
+              <button class="btn btn-error btn-sm" onclick="uiManager.handleDeleteTodo('${
+                todo.id
+              }')">
+                <i class="bx bx-trash bx-xs"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
     }
+    
 
-    todos.forEach((todo) => {
-      const row = document.createElement("tr");
-      row.classList.add("todo-item");
-      row.setAttribute("data-id", todo.id);
-
-      const taskCell = document.createElement("td");
-      taskCell.textContent = this.todoItemFormatter.formatTask(todo.task);
-      row.appendChild(taskCell);
-
-      const dueDateCell = document.createElement("td");
-      dueDateCell.textContent = this.todoItemFormatter.formatDueDate(todo.dueDate);
-      row.appendChild(dueDateCell);
-
-      const statusCell = document.createElement("td");
-      statusCell.textContent = this.todoItemFormatter.formatStatus(todo.completed);
-      row.appendChild(statusCell);
-
-      const actionsCell = document.createElement("td");
-      const editButton = document.createElement("button");
-      editButton.textContent = "Edit";
-      editButton.addEventListener("click", () => this.handleEditTodo(todo.id));
-
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "Delete";
-      deleteButton.addEventListener("click", () => this.handleDeleteTodo(todo.id));
-
-      actionsCell.appendChild(editButton);
-      actionsCell.appendChild(deleteButton);
-      row.appendChild(actionsCell);
-
-      this.todosListBody.appendChild(row);
-    });
-  }
-
-  handleEditTodo(id) {
-    const todo = this.todoManager.todos.find((t) => t.id === id);
-    if (todo) {
-      const updatedTask = prompt("Enter the updated task");
-      if (updatedTask === null || updatedTask.trim() === "") {
-        return;
-      }
-
-      todo.task = updatedTask.trim();
-      this.todoManager.saveToLocalStorage();
-      this.showAllTodos();
-      this.showAlertMessage("Todo updated successfully", "success");
-    }
-  }
-
-  handleDeleteTodo(id) {
+  
+handleEditTodo(id) {
+  const todo = this.todoManager.todos.find((t) => t.id === id);
+  if (todo) {
+    this.taskInput.value = todo.task;
     this.todoManager.deleteTodo(id);
-    this.showAllTodos();
-    this.showAlertMessage("Todo deleted successfully", "success");
-  }
 
-  handleFilterTodos(status) {
-    const filteredTodos = this.todoManager.filterTodos(status);
-    this.displayTodos(filteredTodos);
-  }
+    const handleUpdate = () => {
+      this.addBtn.innerHTML = "<i class='bx bx-plus bx-sm'></i>";
+      this.showAlertMessage("Todo updated successfully", "success");
+      this.showAllTodos();
+      this.addBtn.removeEventListener("click", handleUpdate);
+    };
 
-  showAlertMessage(message, type) {
-    const alertBox = `
-      <div class="alert alert-${type} shadow-lg mb-5 w-full">
-        <div>
-          <span>${message}</span>
-        </div>
-      </div>
-    `;
-    this.alertMessage.innerHTML = alertBox;
-    this.alertMessage.classList.remove("hide");
-    this.alertMessage.classList.add("show");
-    setTimeout(() => {
-      this.alertMessage.classList.remove("show");
-      this.alertMessage.classList.add("hide");
-    }, 3000);
-  }
-
-  clearInputs() {
-    this.taskInput.value = "";
-    this.dateInput.value = "";
+    this.addBtn.innerHTML = "<i class='bx bx-check bx-sm'></i>";
+    this.addBtn.addEventListener("click", handleUpdate);
   }
 }
 
+
+handleToggleStatus(id) {
+this.todoManager.toggleTodoStatus(id);
+this.showAllTodos();
+}
+
+handleDeleteTodo(id) {
+this.todoManager.deleteTodo(id);
+this.showAlertMessage("Todo deleted successfully", "success");
+this.showAllTodos();
+}
+
+
+handleFilterTodos(status) {
+  const filteredTodos = this.todoManager.filterTodos(status);
+  this.displayTodos(filteredTodos);
+}
+
+
+showAlertMessage(message, type) {
+const alertBox = `
+  <div class="alert alert-${type} shadow-lg mb-5 w-full">
+    <div>
+      <span>${message}</span>
+    </div>
+  </div>
+`;
+this.alertMessage.innerHTML = alertBox;
+this.alertMessage.classList.remove("hide");
+this.alertMessage.classList.add("show");
+setTimeout(() => {
+  this.alertMessage.classList.remove("show");
+  this.alertMessage.classList.add("hide");
+}, 3000);
+}
+}
+
+// Class responsible for managing the theme switcher
+class ThemeSwitcher {
+constructor(themes, html) {
+  this.themes = themes;
+  this.html = html;
+  this.init();
+}
+
+init() {
+  const theme = this.getThemeFromLocalStorage();
+  if (theme) {
+    this.setTheme(theme);
+  }
+
+  this.addThemeEventListeners();
+}
+
+addThemeEventListeners() {
+  this.themes.forEach((theme) => {
+    theme.addEventListener("click", () => {
+      const themeName = theme.getAttribute("theme");
+      this.setTheme(themeName);
+      this.saveThemeToLocalStorage(themeName);
+    });
+  });
+}
+
+setTheme(themeName) {
+  this.html.setAttribute("data-theme", themeName);
+}
+
+saveThemeToLocalStorage(themeName) {
+  localStorage.setItem("theme", themeName);
+}
+
+getThemeFromLocalStorage() {
+  return localStorage.getItem("theme");
+}
+}
+
+
+
+// Instantiating the classes
 const todoItemFormatter = new TodoItemFormatter();
 const todoManager = new TodoManager(todoItemFormatter);
 const uiManager = new UIManager(todoManager, todoItemFormatter);
+const themes = document.querySelectorAll(".theme-item");
+const html = document.querySelector("html");
+const themeSwitcher = new ThemeSwitcher(themes, html);
