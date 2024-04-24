@@ -65,6 +65,8 @@ header h1 {
 
 .input-section input {
     margin-bottom: 10px;
+    align-items: center;
+    
 }
 
 .todos-filter,
